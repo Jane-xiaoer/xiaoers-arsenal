@@ -60,22 +60,35 @@ AI 从 348 件工具里精准捞出 1-3 个推荐
 
 ## 🏗 仓库结构 / Repo layout
 
+整套系统拆 4 个 repo,各司其职:
+
+| Repo | 可见 | 内容 |
+|---|---|---|
+| **[xiaoers-arsenal](https://github.com/Jane-xiaoer/xiaoers-arsenal)** (本仓库) | 🌐 公开 | 文档 + 案例叙事 + 截图 |
+| **[claude-skill-tearable-cloth](https://github.com/Jane-xiaoer/claude-skill-tearable-cloth)** | 🌐 公开 | 撕扯入口效果沉淀的可复用 Skill |
+| **[website-capture](https://github.com/Jane-xiaoer/website-capture)** | 🔒 私有 | Python 抓取后台 (watcher + capture pipeline) |
+| **[xiaoer-tools-wall](https://github.com/Jane-xiaoer/xiaoer-tools-wall)** | 🔒 私有 | Next.js 工具墙前端 |
+
+本仓库目录结构:
+
 ```
-xiaoers-arsenal/                 ← 你正在看的这个包
+xiaoers-arsenal/                 ← 你正在看的这个包 (公开文档)
 ├── README.md                    公开面 (你正在读)
 ├── CLAUDE.md                    Claude AI 上下文索引,future session 自动加载
 ├── ARCHITECTURE.md              系统架构 / 数据流图 / 技术选型
 ├── OPERATIONS.md                运维手册 (部署 / 排错 / 加新工具)
 ├── CASE_STUDY.md                品牌故事 (对外分享)
 ├── ROADMAP.md                   未来计划
-├── docs/screenshots/            demo 截图
-└── code/                        实际代码 (symlink 到本机别处,git 不追踪)
-    ├── capture/  →  ~/projects/website-capture/      (Python · watcher + capture)
-    ├── wall/     →  ~/projects/xiaoer-tools-wall/    (Next.js + Vercel + Notion)
-    └── skills/tearable-cloth/   (沉淀成 skill,已独立成 repo)
+├── docs/
+│   ├── screenshots/             demo 截图
+│   └── NOTION_MCP_SETUP.md      Notion MCP 安装短指南
+└── code/                        symlink 到本机实际代码 (git 不追踪,本地导航用)
+    ├── capture/                 →  ~/projects/website-capture/
+    ├── wall/                    →  ~/projects/xiaoer-tools-wall/
+    └── skills/tearable-cloth/   →  ~/.shared-skills/tearable-cloth/
 ```
 
-> 代码留在原位,**没动过任何路径** — launchd 还在跑、Vercel 部署不破。symlink 只是为了方便导航 + 让这个文档包成为 single source of truth。
+> 实际代码三处独立 repo,本包只放文档和叙事,扮演 **single source of truth**。symlink 只是本机导航方便,不入 git。
 
 ---
 
