@@ -1,0 +1,15 @@
+# 实际代码 symlink — 这个仓库只是 documentation package
+# 真代码在各自的位置,有自己的 git (xiaoer-tools-wall) 或本地状态 (website-capture)
+code/
+
+# macOS
+.DS_Store
+Thumbs.db
+
+# Editor
+.vscode/
+.idea/
+
+# Temp
+*.log
+*.tmp
