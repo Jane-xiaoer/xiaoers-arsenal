@@ -83,7 +83,25 @@ cd ~/projects/xiaoer-tools-wall && vercel --prod --yes --token "$TOKEN"
 
 ### 分类不准 / 同一类工具反复要手动改
 
-2026-05-12 起,`feedback_collector.py` 每 30min 扫 Notion,自动学习 Jane 手工改的分类偏好。
+2026-05-12 起有**两层防御**:
+
+1. **二审 agent (实时)** — `capture.py:classification_audit()` 在一审之后跑挑刺,可推翻一级+二级。审计日志:
+   ```bash
+   tail -20 ~/projects/website-capture/.classification_audit.jsonl | jq .
+   ```
+   想分析哪类最易被二审推翻 (后期 prompt 改进的依据):
+   ```bash
+   /opt/homebrew/bin/python3.13 -c "
+   import json
+   from collections import Counter
+   recs=[json.loads(l) for l in open('/Users/jane/projects/website-capture/.classification_audit.jsonl')]
+   swap=[r for r in recs if r['audit']['verdict']!='ok']
+   c=Counter(f\"{r['first_pass']['cat']} → {r['audit']['cat']}\" for r in swap)
+   for k,v in c.most_common(): print(f'  {v:3d}  {k}')
+   "
+   ```
+
+2. **反馈学习 (异步)** — `feedback_collector.py` 每 30min 扫 Notion,自动学习 Jane 手工改的分类偏好。
 
 看系统已学到啥:
 ```bash

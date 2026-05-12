@@ -89,6 +89,19 @@ Jane (小耳) 自己用的工具收藏宇宙: 浏览器按 ⌘D → Python watch
 - 改过的写到 `.classification_corrections.jsonl`,下次 capture.py 自动注入 Gemini prompt 作 fewshot
 - **Jane 改一次,系统记一辈子,类似工具下次自动分对**
 
+### B+. 分类二审 agent (capture 内联,实时质检)
+- `capture.py:classification_audit()` — 一审输出后立刻接一个 Gemini call 当「挑刺专家」
+- 可推翻一级+二级,必须给 verdict (`ok` / `swap_sub` / `swap_both`),禁止 uncertain
+- 注入 Jane 历史更正作 fewshot,二审会越来越懂她
+- 修改全部写 `.classification_audit.jsonl` 供 Jane 后期分析「哪类最易错」
+- 实测: Bruno Simon 个人作品集 (一审 🎨 视觉/3D 动效) → 二审正确推翻成 🌟 灵感/设计灵感
+- Subcategory 字段已经从 rich_text 改成 **select 类型**,Jane 在 Notion 表格视图直接下拉点选
+
+### B 任务延伸: cover 同色检测
+- `capture.py:is_uniform_image()` PIL 稀疏采样,主色占比 >85% 即拒
+- 同色 → 等 4s 让 canvas/webgl 稳定后重抓
+- 仍同色 → 用 og:image 兜底,本地 covers/ 不覆盖原图,发 macOS 通知
+
 ### C. 健康自检 + 失败告警 (macOS notification)
 - **Deploy 监控**:`capture.py` 每次 deploy 启动一个 monitor 子进程,8s 内 vercel 进程异常退出 → 立刻 `osascript display notification "🚨 capture deploy: ..."`
 - **每日自检**:`watcher.py:health_check_once()` 由 healthcheck_loop 每 24h 跑一次:
@@ -105,6 +118,8 @@ Jane (小耳) 自己用的工具收藏宇宙: 浏览器按 ⌘D → Python watch
 | 系统学到啥分类偏好 | `wc -l ~/projects/website-capture/.classification_corrections.jsonl` |
 | 想立刻跑一次自检 | `python3 -c "import sys;sys.path.insert(0,'/Users/jane/projects/website-capture');from watcher import health_check_once;health_check_once()"` |
 | 想立刻跑一次反馈学习 | `python3 ~/projects/website-capture/feedback_collector.py` |
+| 二审改过了哪几条 / 哪类最易错 | `tail ~/projects/website-capture/.classification_audit.jsonl \| jq` |
+| 工具墙卡片是黑图 / 同色屏 | `capture.py:is_uniform_image()` 已自动拒;若 Notion 上仍是黑,大概率 og:image 也没救,Jane 手动改 cover |
 
 ---
 
