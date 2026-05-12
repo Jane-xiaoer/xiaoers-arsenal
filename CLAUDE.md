@@ -61,14 +61,50 @@ Jane (小耳) 自己用的工具收藏宇宙: 浏览器按 ⌘D → Python watch
 | 任务 | 行动 |
 |---|---|
 | Jane 说"撕扯感不对" | 调 `code/wall/components/TearGate.tsx` 物理参数,或者引用 `code/skills/tearable-cloth/SKILL.md` 速查表 |
-| Jane 说"工具墙图片空白" | 跑 `code/capture/backfill_covers.py` 重抓,然后 `vercel --prod --yes` |
-| Jane 说"分类细化" | 改 `code/capture/reclassify.py` 的 TAXONOMY,跑一遍重分类 348 个 |
-| Jane 说"刚才收藏没成功" | 看 `~/projects/website-capture/logs/watcher.log`,基本是 Chrome dialog 操作问题 |
+| Jane 说"工具墙图片空白" | **先看 deploy.log** 看 token/build 是否挂 → 健康自检会发通知,不会再 36h 没人知道 |
+| Jane 说"分类细化" | 改 `code/capture/reclassify.py` 的 `TAXONOMY` (3 处同步,见下) |
+| Jane 说"刚才收藏没成功" | 看 `~/projects/website-capture/logs/watcher.log`,搜 `⏭ 跳过重复` 或 Chrome dialog 问题 |
 | Jane 想加新浏览器 | **不用改代码** — watcher 自动 discover (`~/Library/Application Support/X/{Default,Profile *}/Bookmarks`) |
 | Jane 说"AI 推不准" | 看 `code/wall/app/api/chat/route.ts` 的 systemPrompt + Notion 字段权重 |
+| Jane 说"分类不准" | **优先**改 `code/capture/capture.py` 的 `CATEGORY_HINTS` 加边界示例;同时 feedback_collector 会自学她手工改的偏好 |
 | Jane 想归档某工具 | Notion 里 `archived: true` 即可,1 分钟 ISR 自动刷 |
 | Jane 想改 cover/middle 视觉 | `code/wall/lib/paper-texture.ts` (canvas 2D 画) |
-| Jane 想加新分类 | `code/wall/lib/types.ts` 的 `SUBCATEGORIES` + `code/capture/reclassify.py` TAXONOMY 同步 |
+| Jane 想加新分类 | **3 处同步**:`code/capture/capture.py` 的 `TAXONOMY` + `code/capture/reclassify.py` 的 `TAXONOMY` + `code/wall/lib/types.ts` 的 `SUBCATEGORIES` |
+| Vercel token 出问题 | 改 `.env.local` 的 `VERCEL_TOKEN`,不用 `vercel login`。详见无人值守章节 |
+
+---
+
+## 无人值守机制 (2026-05-12 改造) ★
+
+系统现在能自己照顾自己,Jane 不用再为日常运维介入。背景:之前几次故障是因为 Jane 不知道后台失败,所以加了三层 ABC:
+
+### A. 永久 Vercel token (替代 `vercel login`)
+- `VERCEL_TOKEN` (Full Account, 永不过期) 在 `~/projects/xiaoer-tools-wall/.env.local` 和 `~/.shared-skills/api-registry/.env`
+- `capture.py` deploy 加 `--token $VERCEL_TOKEN`,**不依赖 auth.json**
+- 历史教训:auth.json 被清空过一次,36h Jane 不知道。改 token 模式后这个故障模式消失
+
+### B. 分类自学反馈 (in-context learning)
+- 每次首次分类写到 `~/projects/website-capture/.classification_log.jsonl`
+- `feedback_collector.py` 每 30min 扫 Notion 看哪条卡的 Category/Subcategory 被 Jane 改过
+- 改过的写到 `.classification_corrections.jsonl`,下次 capture.py 自动注入 Gemini prompt 作 fewshot
+- **Jane 改一次,系统记一辈子,类似工具下次自动分对**
+
+### C. 健康自检 + 失败告警 (macOS notification)
+- **Deploy 监控**:`capture.py` 每次 deploy 启动一个 monitor 子进程,8s 内 vercel 进程异常退出 → 立刻 `osascript display notification "🚨 capture deploy: ..."`
+- **每日自检**:`watcher.py:health_check_once()` 由 healthcheck_loop 每 24h 跑一次:
+  - vercel whoami 验证 token
+  - deploy.log 近期 Error 计数
+  - 工具墙 sites API HTTP 状态
+  - 任一异常发通知
+
+### 调试入口
+| 现象 | 看哪 |
+|---|---|
+| Jane 说"刚才好像没成功" | `tail logs/watcher.log` 搜 `📌` 找最近触发,搜 `⏭ 跳过重复` 看是否被 dedup gate 拦 |
+| 工具墙图没刷 | `tail logs/deploy.log` 看最近 deploy 是否成功 |
+| 系统学到啥分类偏好 | `wc -l ~/projects/website-capture/.classification_corrections.jsonl` |
+| 想立刻跑一次自检 | `python3 -c "import sys;sys.path.insert(0,'/Users/jane/projects/website-capture');from watcher import health_check_once;health_check_once()"` |
+| 想立刻跑一次反馈学习 | `python3 ~/projects/website-capture/feedback_collector.py` |
 
 ---
 
