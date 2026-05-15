@@ -7,6 +7,11 @@
 
 🌐 在线 / Live: **<https://xiaoer-tools-wall.vercel.app>** （撕一下试试 / Tear it.）
 
+🔁 **想自己搭一个？** 我把可复用的「一键收藏」管线开源到独立 repo 了：
+**[wtf-was-that-site](https://github.com/Jane-xiaoer/wtf-was-that-site)** — ⌘D → AI → Notion，
+带 Obsidian / Vercel front-end 可选钩子，跟着 README 5 分钟跑起来。
+*Want to build your own? The reusable capture pipeline lives at [wtf-was-that-site](https://github.com/Jane-xiaoer/wtf-was-that-site).*
+
 ![cover](docs/screenshots/01_cover.png)
 
 ---
